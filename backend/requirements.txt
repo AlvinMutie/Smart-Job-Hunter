@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+scikit-learn
+spacy
+python-multipart
+pydantic
+pydantic-settings
+python-dotenv
+pandas
+PyMuPDF
