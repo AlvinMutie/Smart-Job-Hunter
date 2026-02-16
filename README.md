@@ -1,87 +1,140 @@
 # 🎯 Smart Job Hunter (Hunter.io)
 
-**Smart Job Hunter** is a high-performance career acceleration platform designed to eliminate "blind applications" by using AI-driven analytics. It perfectly bridges the gap between job seekers and their ideal roles through data-driven matching and automated CV optimization.
+![Version](https://img.shields.io/badge/version-2.1.0-indigo?style=for-the-badge&logo=git) ![Status](https://img.shields.io/badge/status-active-success?style=for-the-badge&logo=activity) ![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge) ![Python](https://img.shields.io/badge/python-3.10+-yellow?style=for-the-badge&logo=python&logoColor=white) ![React](https://img.shields.io/badge/react-18.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)
 
-![Hunter.io Preview](https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2426)
+> **Stop Applying Blindly. Hunt Smarter.**
+> The AI-powered career acceleration platform that combines **70% Tech Skill Overlap** with **30% Contextual Similarity** to match you with your dream job.
 
-## 🚀 Key Features
+![Dashboard Preview](https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2670)
 
-### 🧠 AI-Powered Matching Engine
-- **TF-IDF & Cosine Similarity**: Custom algorithm that mathematically compares your profile against job descriptions for high-precision matching.
-- **Skill Gap Analysis**: Instantly identifies missing keywords in your resume.
-- **Tailoring Advice**: Provides actionable tips for every job to help you bridge technical gaps and land interviews.
+## 🚀 Overview
 
-### 📄 Automated CV Hub
-- **Zero-Input Parsing**: Backend support for PDF and TXT extraction—just upload your resume and let the AI do the work.
-- **Smart Memory**: Your profile learns from your CV over time, providing personalized recommendations across the platform.
+**Smart Job Hunter** eliminates the guesswork from your job search. Unlike standard job boards that rely on basic keyword matching, our **Hybrid Matching Engine** analyzes the semantic context of your resume against thousands of job descriptions. We identify *exactly* why you're a fit—and more importantly, why you aren't.
 
-### 📑 Professional Pipeline Tracker
-- **Application Workflow**: Manage your job hunt from "Not Applied" to "Offer Received."
-- **Unified Analytics**: See your average match scores and application conversion rates in one place.
+### Core Capabilities
 
-### 💎 Premium Design System
-- **Modern Glassmorphism UI**: High-end aesthetic with backdrop blurs, deep gradients, and sleek animations.
-- **Responsive Dashboard**: Personalized experience that adapts to your career preferences.
+- **🧠 Hybrid Matching Engine**: Uses TF-IDF vectorization and cosine similarity to calculate a precise 0-100% match score. Handles tech aliases (e.g., "JS" = "JavaScript") automatically.
+- **📄 AI Gap Analysis**: Instantly visualizes missing skills. If a job requires "Docker" and you don't list it, we tell you immediately.
+- **📋 Kanban Pipeline Tracker**: A Trello-style board to track applications from *Not Applied* → *Interview* → *Offer*.
+- **💎 Premium UX**: Features a stunning Material 3 Dark Mode interface with smooth scrolling (`Lenis`), spotlight hover effects, and 3D visualizations.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React (Vite), Tailwind CSS, Lucide Icons, Framer Motion.
-- **Backend**: FastAPI (Python), SQLAlchemy, PyMuPDF (fitz), scikit-learn.
-- **Database**: SQLite (Version 3) for robust local development.
-- **Auth**: JWT (JSON Web Tokens) with secure Password Hashing.
+### Frontend (Client)
+- **Framework**: React 18 (Vite)
+- **Styling**: Tailwind CSS + Custom Animations
+- **Motion**: Framer Motion (Scroll Reveals, Hero Animations)
+- **Icons**: Lucide React
+- **UX Polish**: Lenis (Smooth Scroll), Glassmorphism components
+
+### Backend (Server)
+- **API**: FastAPI (High-performance Python framework)
+- **AI/ML**: `scikit-learn` (TF-IDF), `spacy` (NLP Entity Extraction)
+- **Database**: SQLAlchemy (ORM) + SQLite (Dev)
+- **PDF Parsing**: PyMuPDF (`fitz`) for high-fidelity resume extraction
+- **Auth**: JWT (JSON Web Tokens) with Password Hashing (`bcrypt`)
 
 ---
 
 ## 🚦 Getting Started
 
-### Prerequisites
-- Python 3.10+
-- Node.js 18+
+Follow these steps to set up the project locally.
 
-### 1. Backend Setup
+### Prerequisites
+- **Python** 3.10+
+- **Node.js** 18+
+- **Git**
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/AlvinMutie/Smart-Job-Hunter.git
+cd Smart-Job-Hunter
+```
+
+### 2. Backend Setup
+Initialize the Python environment and install dependencies.
+
 ```bash
 cd backend
+
+# Create virtual environment
 python -m venv venv
-# Windows
+
+# Activate (Windows)
 .\venv\Scripts\activate
-# Install deps
+# Activate (Mac/Linux)
+# source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Download NLP model
 python -m spacy download en_core_web_sm
-# Run server
+
+# Start the API Server
 python -m app.main
 ```
+*The backend runs on `http://localhost:8000`*
 
-### 2. Frontend Setup
+### 3. Frontend Setup
+Install and run the React application.
+
 ```bash
 cd frontend
+
+# Install packages
 npm install
+
+# Start Development Server
 npm run dev
 ```
-Navigate to `http://localhost:3000` to start your hunt.
+*The frontend runs on `http://localhost:5173`*
 
 ---
 
 ## 📂 Project Structure
+
 ```text
-Jobscrp/
+Smart-Job-Hunter/
 ├── backend/
 │   ├── app/
-│   │   ├── services/      # AI Matching & Processing logic
-│   │   ├── models/        # Data Structures
-│   │   └── main.py        # API Gateway
-│   └── job_hunter_v3.db   # Latest stable DB
+│   │   ├── services/      # AI Logic (matching_service.py, resume_parser.py)
+│   │   ├── models/        # Database Schemas (User, Job, Application)
+│   │   └── routers/       # API Endpoints (Auth, Jobs, Upload)
+│   ├── job_hunter_v3.db   # SQLite Database
+│   └── requirements.txt
 └── frontend/
     ├── src/
-    │   ├── pages/         # Dashboard, Matches, Tracker
-    │   └── services/      # API Interceptors
+    │   ├── components/    # Reusable UI (SpotlightCard, BentoGrid)
+    │   ├── pages/         # Landing, Dashboard, Tracker
+    │   ├── services/      # Axios API definition
+    │   └── assets/        # Images & Fonts
+    └── package.json
 ```
 
 ---
 
+## 🤝 Contributing
+
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
 ## ⚖️ License
+
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
-*Built with ❤️ for talented developers.*
+
+<div align="center">
+  <p>Built with ❤️ by <b>Hunter.io Team</b></p>
+  <p><i>Stop applying. Start hunting.</i></p>
+</div>
