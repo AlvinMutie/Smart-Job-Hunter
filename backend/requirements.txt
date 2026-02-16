@@ -10,3 +10,5 @@ pydantic-settings
 python-dotenv
 pandas
 PyMuPDF
+python-docx
+docx2txt

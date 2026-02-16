@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
-import { Briefcase, FileText, LayoutDashboard, Clock, Trophy, LogOut } from 'lucide-react';
+import { Briefcase, FileText, LayoutDashboard, Clock, Trophy, LogOut, Settings as SettingsIcon } from 'lucide-react';
 
 import Dashboard from './pages/Dashboard';
 import Tracker from './pages/Tracker';
@@ -9,9 +9,24 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProfileSetup from './pages/ProfileSetup';
+import ResumeHub from './pages/ResumeHub';
+import Settings from './pages/Settings';
 import { authService } from './services/api';
 
+import Lenis from 'lenis'
+
 function App() {
+    useEffect(() => {
+        const lenis = new Lenis()
+
+        function raf(time) {
+            lenis.raf(time)
+            requestAnimationFrame(raf)
+        }
+
+        requestAnimationFrame(raf)
+    }, [])
+
     return (
         <Router>
             <Routes>
@@ -35,6 +50,18 @@ function App() {
                 <Route path="/matches" element={
                     <ProtectedRoute>
                         <DashboardLayout><Matches /></DashboardLayout>
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/resume-hub" element={
+                    <ProtectedRoute>
+                        <DashboardLayout><ResumeHub /></DashboardLayout>
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/settings" element={
+                    <ProtectedRoute>
+                        <DashboardLayout><Settings /></DashboardLayout>
                     </ProtectedRoute>
                 } />
 
@@ -90,7 +117,8 @@ function DashboardLayout({ children }) {
         { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
         { icon: <Trophy size={20} />, label: 'Matches', path: '/matches' },
         { icon: <Clock size={20} />, label: 'Tracker', path: '/tracker' },
-        { icon: <FileText size={20} />, label: 'Resume Hub', path: '#' },
+        { icon: <FileText size={20} />, label: 'Resume Hub', path: '/resume-hub' },
+        { icon: <SettingsIcon size={20} />, label: 'Settings', path: '/settings' },
     ];
 
     return (
@@ -112,8 +140,8 @@ function DashboardLayout({ children }) {
                             key={item.label}
                             to={item.path}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${window.location.pathname === item.path
-                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 translate-x-1'
-                                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 translate-x-1'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                                 }`}
                         >
                             {item.icon}

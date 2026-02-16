@@ -18,19 +18,20 @@ export const authService = {
     login: (formData) => api.post('/login', formData, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     }).then(res => res.data),
-    getMe: () => api.get('/me').then(res => res.data),
+    getMe: () => api.get(`/me?t=${Date.now()}`).then(res => res.data),
     updateProfile: (data) => api.post('/profile', data).then(res => res.data),
     uploadResume: (formData) => api.post('/upload-resume', formData).then(res => res.data),
 };
 
 export const jobService = {
-    getJobs: (params) => api.get('/jobs', { params }).then(res => res.data),
+    getJobs: (params) => api.get('/jobs', { params: { ...params, t: Date.now() } }).then(res => res.data),
     matchResume: (formData) => api.post('/match', formData).then(res => res.data),
+    tailorResume: (formData) => api.post('/tailor-resume', formData).then(res => res.data),
     generateCoverLetter: (formData) => api.post('/generate-cover-letter', formData).then(res => res.data),
 };
 
 export const trackerService = {
-    getApplications: () => api.get('/applications').then(res => res.data),
+    getApplications: () => api.get(`/applications?t=${Date.now()}`).then(res => res.data),
     addApplication: (data) => api.post('/applications', data).then(res => res.data),
 };
 

@@ -65,7 +65,7 @@ class ApplicationTracker(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     job_id = Column(Integer, ForeignKey("jobs.id"))
-    status = Column(Enum(ApplicationStatus), default=ApplicationStatus.NOT_APPLIED)
+    status = Column(Enum(ApplicationStatus, values_callable=lambda obj: [e.value for e in obj]), default=ApplicationStatus.NOT_APPLIED)
     match_score = Column(Float)
     applied_at = Column(DateTime, nullable=True)
     notes = Column(Text, nullable=True)

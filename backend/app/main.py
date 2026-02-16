@@ -18,6 +18,7 @@ import fitz  # PyMuPDF
 from app.services.matching_engine import MatchingEngine
 from app.services.job_service import job_service
 from app.services.cover_letter import cover_letter_generator
+from app.services.tailor_service import tailor_service
 from app.database import get_db, init_db
 from app.models.models import User, Profile, Job
 from app.auth import get_password_hash, verify_password, create_access_token, get_current_user
@@ -74,21 +75,24 @@ async def get_jobs(
     location: Optional[str] = None, 
     remote_status: Optional[str] = None, 
     experience_level: Optional[str] = None,
-    keywords: Optional[str] = None
+    keywords: Optional[str] = None,
+    db: Session = Depends(get_db)
 ):
-    jobs = await job_service.get_jobs(location, remote_status, experience_level, keywords)
+    jobs = await job_service.get_jobs(db, location, remote_status, experience_level, keywords)
     return jobs
 
 @app.post("/match")
-async def match_resume(resume_text: str = Form(...), job_id: int = Form(...)):
-    # Fetch job details (mocked for now)
-    job = next((j for j in job_service.mock_jobs if j["id"] == job_id), None)
+async def match_resume(resume_text: str = Form(...), job_id: int = Form(...), db: Session = Depends(get_db)):
+    job = await job_service.get_job_by_id(db, job_id)
     if not job:
         return {"error": "Job not found"}
+        
+    # Combine job skills and description for better matching
+    job_content = f"{job.skills_required} {job.description}"
     
-    score = engine.calculate_match_score(resume_text, job["description"])
+    score = engine.calculate_match_score(resume_text, job_content)
     resume_skills = engine.extract_skills(resume_text)
-    job_skills = engine.extract_skills(job["description"])
+    job_skills = engine.extract_skills(job_content)
     
     comparison = engine.compare_skills(resume_skills, job_skills)
     
@@ -103,17 +107,44 @@ async def match_resume(resume_text: str = Form(...), job_id: int = Form(...)):
 async def generate_cover_letter_api(
     job_id: int = Form(...),
     candidate_name: str = Form(...),
-    resume_text: str = Form(...)
+    resume_text: str = Form(...),
+    db: Session = Depends(get_db)
 ):
-    job = next((j for j in job_service.mock_jobs if j["id"] == job_id), None)
+    job = await job_service.get_job_by_id(db, job_id)
     if not job:
         return {"error": "Job not found"}
     
     skills = engine.extract_skills(resume_text)
     letter = cover_letter_generator.generate(
-        job["title"], job["company"], job["description"], candidate_name, skills
+        job.title, job.company, job.description, candidate_name, skills
     )
     return {"cover_letter": letter}
+
+@app.post("/tailor-resume")
+async def tailor_resume_api(
+    job_id: int = Form(...),
+    resume_text: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    job = await job_service.get_job_by_id(db, job_id)
+    if not job:
+        return {"error": "Job not found"}
+    
+    # Extract skills for precise tailoring
+    job_skills = engine.extract_skills(job.description)
+    resume_skills = engine.extract_skills(resume_text)
+    
+    missing_skills = list(set(job_skills) - set(resume_skills))
+    
+    suggestions = tailor_service.generate_suggestions(
+        resume_text, job.title, missing_skills
+    )
+    
+    return {
+        "job_title": job.title,
+        "company": job.company,
+        "suggestions": suggestions
+    }
 
 # --- Auth Endpoints ---
 
@@ -153,16 +184,21 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
 @app.get("/me")
 async def get_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     profile = db.query(Profile).filter(Profile.user_id == current_user.id).first()
+    logging.info(f"Fetch /me: user_id={current_user.id}, profile_found={profile is not None}")
+    
+    # Ensure full_name is at least an empty string
+    name = current_user.full_name or "Professional Hunter"
+    
     return {
         "id": current_user.id,
         "email": current_user.email,
-        "full_name": current_user.full_name,
+        "full_name": name,
         "is_profile_complete": current_user.is_profile_complete == 1,
         "profile": {
             "preferred_role": profile.preferred_role if profile else None,
             "skills": profile.skills if profile else None,
             "experience_level": profile.experience_level if profile else None,
-            "has_resume": profile.resume_path is not None if profile else False,
+            "has_resume": bool(profile.resume_path) if profile else False,
             "resume_text": profile.resume_text if profile else None
         } if profile else None
     }
@@ -201,13 +237,17 @@ def extract_text(file_path: str) -> str:
             for page in doc:
                 text += page.get_text()
             doc.close()
+        elif ext in [".docx", ".doc"]:
+            import docx2txt
+            text = docx2txt.process(file_path)
         elif ext in [".txt", ".md"]:
             with open(file_path, "r", encoding="utf-8") as f:
                 text = f.read()
-        # Add docx support if needed later
+        else:
+            logging.warning(f"Unsupported file extension: {ext}")
     except Exception as e:
-        print(f"Error extracting text: {e}")
-    return text
+        logging.error(f"Error extracting text from {file_path}: {e}")
+    return text.strip()
 
 @app.post("/upload-resume")
 async def upload_resume(
